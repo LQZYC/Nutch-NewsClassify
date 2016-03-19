@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration PUBLIC
+        "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd" >
+<generatorConfiguration>
+
+    <!-- Class Driver Path -->
+    <classPathEntry location="/Applications/maven/localRepository/mysql/mysql-connector-java/5.1.34/mysql-connector-java-5.1.34.jar"/>
+
+    <context id="context" targetRuntime="MyBatis3">
+        <commentGenerator>
+            <!--false表示打开注释 true表示关闭注释 如果不想看到那些自动生成的注释 可以选择true-->
+            <property name="suppressAllComments" value="true"/>
+            <!-- false时打开时间标志，true时关闭 -->
+            <property name="suppressDate" value="true"/>
+        </commentGenerator>
+
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver" connectionURL="jdbc:mysql://120.25.162.238:3306/nutchClassify" userId="lq" password="123456"/>
+
+        <javaTypeResolver>
+            <!-- This property is used to specify whether MyBatis Generator should force the use of java.math.BigDecimal
+      for DECIMAL and NUMERIC fields, rather than substituting integral types when possible -->
+            <!--mybatis里专门用来处理NUMERIC和DECIMAL类型的策略 -->
+            <property name="forceBigDecimals" value="true"/>
+        </javaTypeResolver>
+        <!--对生成POJO的代码进行设置-->
+        <javaModelGenerator targetPackage="org.apache.nutch.parse.lq.po" targetProject="/Users/lq-pc/project/FocuseNutch/apache-nutch-2.3.1/src/plugin/parse-lq/src/java">
+            <!-- This property is used to select whether MyBatis Generator will generate different Java packages for
+      the objects based on the catalog and schema of the introspected table -->
+            <property name="enableSubPackages" value="true"/>
+            <!-- This property is used to select whether MyBatis Generator adds code to trim the white space from character fields returned from the database -->
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+        <!--对生成xml文件进行设置-->
+        <sqlMapGenerator targetPackage="org.apache.nutch.parse.lq.config" targetProject="/Users/lq-pc/project/FocuseNutch/apache-nutch-2.3.1/src/plugin/parse-lq/src/java">
+            <!-- This property is used to select whether MyBatis Generator will generate different Java packages for
+      the objects based on the catalog and schema of the introspected table -->
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+        <!--设置mapper接口-->
+        <javaClientGenerator targetPackage="org.apache.nutch.parse.lq.mapper" targetProject="/Users/lq-pc/project/FocuseNutch/apache-nutch-2.3.1/src/plugin/parse-lq/src/java" type="XMLMAPPER">
+            <!-- This property is used to select whether MyBatis Generator will generate different Java packages for
+      the objects based on the catalog and schema of the introspected table -->
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <table tableName="crawl_data" enableCountByExample="false" enableDeleteByExample="false" enableSelectByExample="false"
+               enableUpdateByExample="false"/>
+    </context>
+</generatorConfiguration>

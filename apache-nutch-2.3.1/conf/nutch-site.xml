@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+    <!--此参数主要用于在IDE环境开发模式运行，在构建输出的runtime部署运行请注释或删除此项参数-->
+    <!-- Just for development, please remove this plugin.folders for production env -->
+    <!--<property>-->
+		<!--<name>plugin.folders</name>-->
+		<!--<value>./src/plugin</value>-->
+	<!--</property>-->
+<!--定义Nutch运行过程引入的插件列表，正则表达式格式。-->
+    <!--注意value不要换行尤其是基于xml格式化代码时可能由于value内容较长而自动换行，会导致末尾配置的插件不被识别。
+    为了让indexer-solr被识别 所以最后加了一个插件index-html,部署到分布式环境下可以删除最后的"|index-html"插件
+    -->
+	<property>
+		<name>plugin.includes</name>
+		<value>protocol-s2jh|urlfilter-regex|parse-(html|lq)|index-basic|urlnormalizer-(pass|regex|basic)|scoring-opic|indexer-solr</value>
+		<description>Regular expression naming plugin directory names to
+			include. Any plugin not matching this expression is
+			excluded.
+			In any case you need at least include the nutch-extensionpoints plugin. By
+			default Nutch includes crawling
+			just HTML and plain text via HTTP,
+			and basic indexing and search plugins. In order to use HTTPS please enable
+			protocol-httpclient, but be aware of possible intermittent problems with the
+			underlying commons-httpclient library.
+		</description>
+	</property> 
+
+    <!--fetcher.parse：设置在每fetch页面后立刻调用parse插件进行页面内容解析；否则fetch阶段只进行页面内容爬取，-->
+    <!--需要到下一个parse阶段批量进行解析调用。一般在开发阶段可以设置为true，方便于爬取和解析两个过程同时触发，-->
+    <!--用于分析确认爬取和解析是否正常处理。-->
+	<property>
+		<name>fetcher.parse</name>
+		<value>false</value>
+		<description>If true, fetcher will parse content. NOTE: previous releases would
+			default to true. Since 2.0 this is set
+			to false as a safer default.
+		</description>
+	</property>
+
+	<property>
+		<name>http.content.limit</name>
+		<value>-1</value>
+		<description>The length limit for downloaded content using the http
+			protocol, in bytes. If this value is nonnegative
+			(>=0), content longer
+			than it will be truncated; otherwise, no truncation at all. Do not
+			confuse this setting with the
+			file.content.limit setting.
+		</description>
+	</property>
+    <!--在开发定制的解析插件时，经常需要Debug跟踪页面元素之解析是否正确，默认parser.timeout较小可能导致还未一步步跟踪到调试代码就直接抛出超时异常，-->
+    <!--因此可以把此值设置较大或-1避免在Debug过程中断。但是在生产环境运行建议设置合理值，避免长时间解析等待。-->
+	<property>
+		<name>parser.timeout</name>
+		<value>-1</value>
+		<description>Debugging takes time, esp. when inspecting variables, stack traces, etc. Usually too much time, so that
+			some timeout will apply and stop the application. Set timeouts in the nutch-site.xml used for debugging to a rather
+			high value (or -1 for unlimited), e.g., when debugging the parser.
+		</description>
+	</property>
+	<property>
+	  <name>file.content.limit</name>
+	  <value>6553600</value>
+	  <description>The length limit for downloaded content using the file
+	   protocol, in bytes. If this value is nonnegative (>=0), content longer
+	   than it will be truncated; otherwise, no truncation at all. Do not
+	   confuse this setting with the http.content.limit setting.
+	  </description>
+	</property>
+
+	<property>
+	  <name>fetcher.server.delay</name>
+	  <value>0</value>
+	  <description>The number of seconds the fetcher will delay between
+	   successive requests to the same server. Note that this might get
+	   overriden by a Crawl-Delay from a robots.txt and is used ONLY if
+	   fetcher.threads.per.queue is set to 1.
+	   </description>
+	</property>
+
+	<property>
+		<name>http.agent.name</name>
+		<value>Your Nutch Spider</value>
+	</property>
+
+	<property>
+		<name>http.accept.language</name>
+		<value>ja-jp, en-us,en-gb,en;q=0.7,*;q=0.3</value>
+		<description>Value of the “Accept-Language” request header field.
+			This allows selecting non-English language as default
+			one to retrieve.
+			It is a useful setting for search engines build for certain national group.
+		</description>
+	</property>
+
+    <!--Nutch会根据页面信息及头信息判断页面编码，绝大部分情况能正常处理编码问题。-->
+    <!--如果某些特定页面出现中文乱码问题，可以尝试设置此值为UTF-8或GB2312等编码参数值。-->
+	<property>
+		<name>parser.character.encoding.default</name>
+		<value>utf-8</value>
+		<description>The character encoding to fall back to when no other information
+			is available
+		</description>
+	</property>
+
+    <!--基于gora的爬虫数据底层存储机制，-->
+    <!--官方文档及推荐为HBase，本项目默认配置为MongoDB。需要同步配置gora.properties文件中相关参数。-->
+	<property>
+		<name>storage.data.store.class</name>
+		<value>org.apache.gora.mongodb.store.MongoStore</value>
+		<description>Default class for storing data</description>
+	</property>
+
+    <!--可基于Solr实际配置运行地址配置此参数-->
+	<property>
+		<name>solr.server.url</name>
+		<value>http://localhost:8080/solr</value>
+	</property>
+
+    <!--是否强制采用AJAX支持方式执行FetcherJob，默认先基于HTTP模式获取页面内容，然后再基于AJAX模式获取。-->
+    <!-- Custom extension plug-in properties -->
+	<property>
+		<name>fetch.force.ajax.support</name>
+		<value>false</value>
+		<description>
+			true: Force using Htmlunit or WebDriver to fetch content
+			false: First using HTTP without ajax support, if
+			failure then using Htmlunit or WebDriver
+		</description>
+	</property>
+	<property>
+		<name>jdbc.driver</name>
+		<value>com.mysql.jdbc.Driver</value>
+	</property>
+	<property>
+		<name>jdbc.url</name>
+		<value>jdbc:mysql://localhost:3306/nutchClassify?useUnicode=true&amp;characterEncoding=UTF-8</value>
+	</property>
+	<property>
+		<name>jdbc.username</name>
+		<value>lq</value>
+	</property>
+	<property>
+		<name>jdbc.password</name>
+		<value>123456</value>
+	</property>
+    <property>
+        <name>generate.batch.id</name>
+        <value>*</value>
+    </property>
+</configuration>

@@ -1,0 +1,9 @@
+/runtime/
+/build/
+/hadoop.log
+/.classpath
+/.project
+/hadoop@
+/.idea
+/apache-nutch-2.3.1.iml
+
