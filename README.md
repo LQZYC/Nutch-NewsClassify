@@ -41,7 +41,7 @@ CREATE TABLE `nutchClassify`.`crawl_data` (
   PRIMARY KEY (`url`));
 ```
 ## 分布式环境配置 ##
-如果网页的爬取过程中不需要ajax支持，那么直接运行是没有问题的，修改conf/nutch-site.xml中的plugin.includes属性使用nutch自带的插件protocol-http。如果要支持ajax，就要对hadoop进行修改。因为selenium和htmlunit需要httpclient4.3，httpcore-4.3以上的版本，然而apach-nutch-2.3.1官方建议使用的是Apache Hadoop 1.2.1 and 2.5.2，这两个我都试过，用1.2.1需要修改更多的jar包，包括升级log4j等，不建议使用hadoop－1.2.1，目前我使用的是hadoop－2.5.2，它自带的是httpclient-4.2.5.jar,httpcore-4.2.5.jar,分布式环境运行的时候会加载hadoop-2.5.2/share/hadoop/tools/lib这下面的jar包，这样会出现很多稀奇古怪的错误，由于我对hadoop本身没有任何研究，所以我索性将hadoop-2.5.2/share/hadoop/tools/lib下的httpclient和httpcore进行升级，升级为对应selenium和htmlunit需要的httpclient和httpcore版本。
+如果网页的爬取过程中不需要ajax支持，那么直接运行是没有问题的，修改conf/nutch-site.xml中的plugin.includes属性使用nutch自带的插件protocol-http。如果要支持ajax，就要对hadoop进行修改。因为selenium和htmlunit需要httpclient4.3，httpcore-4.3以上的版本，然而apach-nutch-2.3.1官方建议使用的是Apache Hadoop 1.2.1 and 2.5.2，这两个我都试过，用1.2.1需要修改更多的jar包，包括升级log4j等，不建议使用hadoop－1.2.1，目前我使用的是hadoop－2.5.2，它自带的是httpclient-4.2.5.jar,httpcore-4.2.5.jar,分布式环境运行的时候会加载hadoop-2.5.2/share/hadoop/common/lib这下面的jar包，这样会出现很多稀奇古怪的错误，由于我对hadoop本身没有任何研究，所以我索性将hadoop-2.5.2/share/hadoop/common/lib下的httpclient和httpcore进行升级，升级为对应selenium和htmlunit需要的httpclient和httpcore版本。
 正如官网所说，建议所有的开发者和用户都升级到2.3.1，这点我很能理解，因为之前的2.3别说分布式了，就算是单机脚本都很难跑起来，bug多的飞起。
 ![nutch][9]
 ## 开发环境配置 ##
