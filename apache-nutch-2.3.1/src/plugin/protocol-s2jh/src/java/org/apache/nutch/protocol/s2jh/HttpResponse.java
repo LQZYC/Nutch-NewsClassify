@@ -355,7 +355,7 @@ public class HttpResponse implements Response {
 
         if (ok) {
             this.code = 200;
-            content = html.getBytes();
+            content = html.getBytes(charset);
         } else {
             Http.LOG.warn("Failure Htmlunit parse page for: {}", url);
             Http.LOG.warn("Htmlunit Fetch Failure URL: " + url + ", CharsetName: " + charset + " , Page HTML=\n" + html);

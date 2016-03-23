@@ -6,6 +6,8 @@ import org.apache.solr.client.solrj.beans.Field;
  */
 public class CrawlData {
     @Field("id")
+    private String id;
+    @Field("url")
     private String url;
     @Field
     private String content;
@@ -13,16 +15,19 @@ public class CrawlData {
     private String category;
     @Field("fetch_time")
     private String fetchTime;
-
+    @Field("relevance_score")
+    private double relevanceScore;
     public CrawlData() {
 
     }
 
-    public CrawlData(String url, String content, String category, String fetchTime) {
+    public CrawlData(String id, String url, String content, String category, String fetchTime, double relevanceScore) {
+        this.id = id;
         this.url = url;
         this.content = content;
         this.category = category;
         this.fetchTime = fetchTime;
+        this.relevanceScore = relevanceScore;
     }
 
     public String getUrl() {
@@ -55,5 +60,21 @@ public class CrawlData {
 
     public void setFetchTime(String fetchTime) {
         this.fetchTime = fetchTime == null ? null : fetchTime.trim();
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public double getRelevanceScore() {
+        return relevanceScore;
+    }
+
+    public void setRelevanceScore(double relevanceScore) {
+        this.relevanceScore = relevanceScore;
     }
 }

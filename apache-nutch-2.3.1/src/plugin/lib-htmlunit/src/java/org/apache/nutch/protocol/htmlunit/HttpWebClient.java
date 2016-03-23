@@ -32,7 +32,7 @@ public class HttpWebClient {
                 WebClient webClient = threadWebClient.get();
                 if (webClient == null) {
                     LOG.info("Initing web client for thread: {}", Thread.currentThread().getId());
-                    webClient = new WebClient(BrowserVersion.FIREFOX_24);
+                    webClient = new WebClient(BrowserVersion.FIREFOX_38);
                     webClient.getOptions().setCssEnabled(false);
                     webClient.getOptions().setAppletEnabled(false);
                     webClient.getOptions().setThrowExceptionOnScriptError(false);

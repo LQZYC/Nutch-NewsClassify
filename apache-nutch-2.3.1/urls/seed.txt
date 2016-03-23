@@ -1,1 +1,8 @@
-http://news.sina.com.cn/
+#新浪体育
+http://sports.sina.com.cn/
+#搜狐体育
+http://sports.sohu.com/
+#腾讯体育
+http://sports.qq.com/
+#网易体育
+http://sports.163.com/

@@ -13,14 +13,13 @@ import java.io.InputStreamReader;
  *  昶乐
  */
 public class SvmCheck {
-	public static final String SVM_MODEL_LEXICON = "svm.model.lexicon";
-    public static final String SVM_MODEL = "svm.model";
-    public static final String SVM_CATEGORY = "svm.category";
-    public static final String OTHER = "other";
-    public static final double THRESHOLD = 0.5;
-    public static final Logger LOG   = LoggerFactory.getLogger(SvmCheck.class);
+    private static final String SVM_MODEL_LEXICON = "svm.model.lexicon";
+    private static final String SVM_MODEL         = "svm.model";
+    private static final String SVM_CATEGORY      = "svm.category";
+    private static final double THRESHOLD         = 0.5;
+    public static final  Logger LOG               = LoggerFactory.getLogger(SvmCheck.class);
     private   BasicTextClassifier classifier;
-    public    synchronized  BasicTextClassifier getClassifier(Configuration conf) throws Exception {
+    private synchronized  BasicTextClassifier getClassifier(Configuration conf) throws Exception {
         if (classifier != null){
             return classifier;
         }
@@ -49,15 +48,15 @@ public class SvmCheck {
 	 * 如果需要读取已经训练好的模型，再用其进行分类，可以按照本函数的代码调用分类器
 	 * 
 	 */
-	public  String runLoadModelAndUse(Configuration conf,String text ) throws Exception {
+	public SvmResult runLoadModelAndUse(Configuration conf, String text ) throws Exception {
         if (StringUtil.isEmpty(text)){
             return null;
         }
 		ClassifyResult[] result = getClassifier(conf).classifyText(text, 1);
-        return (result[0].prob) < THRESHOLD ? OTHER : classifier.getCategoryName(result[0].label);
+        return (result[0].prob) < THRESHOLD ? new SvmResult(classifier.getCategoryName(result[0].label),result[0].prob,false,result[0].label) : new SvmResult(classifier.getCategoryName(result[0].label),result[0].prob,true,result[0].label);
 	}
         public static void main(String args[]) throws Exception {
             Configuration conf = NutchConfiguration.create();
-                System.out.println(new SvmCheck().runLoadModelAndUse(conf,"NBA-正直播科比LBJ告别战与KB谢幕?"));
-            }
+            System.out.println(new SvmCheck().runLoadModelAndUse(conf,"NBA-正直播科比LBJ告别战与KB谢幕?"));
+        }
 }

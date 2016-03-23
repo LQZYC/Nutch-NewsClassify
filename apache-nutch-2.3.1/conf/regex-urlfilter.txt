@@ -45,3 +45,7 @@
 
 ################# http://news.sina.com.cn/ ##########################
 +^http://news\.sina\.com\.cn/
++^http://sports\.sina\.com\.cn/
++^http://sports\.sohu\.com/
++^http://sports\.qq\.com/
++^http://sports\.163\.com/

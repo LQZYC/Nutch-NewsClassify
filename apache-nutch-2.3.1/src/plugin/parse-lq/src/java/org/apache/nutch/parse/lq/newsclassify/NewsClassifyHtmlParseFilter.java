@@ -1,10 +1,12 @@
 package org.apache.nutch.parse.lq.newsclassify;
 
+import com.coremedia.iso.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.nutch.parse.HTMLMetaTags;
 import org.apache.nutch.parse.Outlink;
 import org.apache.nutch.parse.Parse;
 import org.apache.nutch.parse.lq.po.CrawlData;
-import org.apache.nutch.parse.lq.svm.SvmCheck;
+import org.apache.nutch.parse.lq.svm.SvmResult;
 import org.apache.nutch.storage.WebPage;
 import org.apache.nutch.util.StringUtil;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
@@ -17,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+
 /**
  *  昶乐
  */
@@ -37,7 +40,7 @@ public class NewsClassifyHtmlParseFilter extends org.apache.nutch.parse.lq.Abstr
     }
 
     @Override public Parse filterInternal(String url, WebPage page, Parse parse, HTMLMetaTags metaTags, DocumentFragment doc) throws Exception {
-        getClassifyDate(parse,page,new Date());
+        getClassifyDate(parse,new Date());
         return parse;
     }
 
@@ -47,7 +50,6 @@ public class NewsClassifyHtmlParseFilter extends org.apache.nutch.parse.lq.Abstr
      * @throws Exception
      */
        private void getDataForSina(DocumentFragment doc,WebPage page,Date date) throws Exception {
-           List<CrawlData> crawlDatas = new ArrayList<>();
            List<String> urlArrs = new ArrayList<>();
            List<String> names = new ArrayList<>();
 
@@ -66,41 +68,39 @@ public class NewsClassifyHtmlParseFilter extends org.apache.nutch.parse.lq.Abstr
            }
 
             if (urlArrs.isEmpty()||names.isEmpty()){
-                return;
             }
-           for (int i=0;i < names.size();i++){
-               crawlDatas.add(new CrawlData(urlArrs.get(i), names.get(i), svmCheck.runLoadModelAndUse(getConf(), names.get(i)), getNowTime(date)));
-           }
-           injectDataToPageMetadata(page.getBatchId().toString(),crawlDatas.size(),page);
-           saveDataToMysql(crawlDatas);
         }
 
 
-       private void  getClassifyDate(Parse parse,WebPage page,Date date) throws Exception {
+       private void  getClassifyDate(Parse parse,Date date) throws Exception {
            Outlink[] outLinks = parse.getOutlinks();
+           if (outLinks.length == 0){
+               return;
+           }
            List<CrawlData> crawlDatas = new ArrayList<>();
-           String category;
            for (Outlink o : outLinks) {
                if (StringUtil.isEmpty(o.getAnchor())) {
                    continue;
                }
-               category = svmCheck.runLoadModelAndUse(getConf(), o.getAnchor());
-               if (category.equals(SvmCheck.OTHER)){
+              SvmResult svmResult = svmCheck.runLoadModelAndUse(getConf(), o.getAnchor());
+               if (!(svmResult.isExceedThreshold())){
                    continue;
                }
-               crawlDatas.add(new CrawlData(o.getToUrl(), o.getAnchor(), category, getNowTime(date)));
+               //有的链接过长,是的varchar(255)不够存,所以将url进行MD5加密后作为主键id,然后定义url为text来存储链接
+               crawlDatas.add(new CrawlData(Hex.encodeHex(DigestUtils.md5(o.getToUrl())), o.getToUrl(), o.getAnchor(), svmResult.getCategory(), getNowTime(date), svmResult.getScore()));
            }
+
            if (crawlDatas.isEmpty()){
                return;
            }
-           injectDataToPageMetadata(getNowTime(date),crawlDatas.size(),page);
+
            int update_num = saveDataToMysql(crawlDatas);
            //如果更新成功就建立索引
            if (update_num != 0){
                addIndexToSolr(crawlDatas);
            }
        }
-    public void addIndexToSolr(List<CrawlData> crawlDatas) {
+    private void addIndexToSolr(List<CrawlData> crawlDatas) {
         try {
             String solrUrl = getConf().get("solr.server.url");
             if (StringUtil.isEmpty(solrUrl)){

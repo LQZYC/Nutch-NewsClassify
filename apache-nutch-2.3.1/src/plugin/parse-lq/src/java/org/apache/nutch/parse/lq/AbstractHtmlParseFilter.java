@@ -1,7 +1,6 @@
 package org.apache.nutch.parse.lq;
 
 import com.sun.org.apache.xpath.internal.XPathAPI;
-import org.apache.avro.util.Utf8;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.ibatis.session.SqlSession;
@@ -17,7 +16,6 @@ import org.apache.nutch.plugin.PluginRepository;
 import org.apache.nutch.plugin.PluginRuntimeException;
 import org.apache.nutch.storage.WebPage;
 import org.apache.nutch.storage.WebPage.Field;
-import org.apache.nutch.util.Bytes;
 import org.apache.nutch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +27,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
-import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -38,17 +35,15 @@ import java.util.regex.Pattern;
 
 
 public abstract class AbstractHtmlParseFilter implements ParseFilter {
-    public static final Logger LOG                                 = LoggerFactory.getLogger(AbstractHtmlParseFilter.class);
-    public static final String               HTMLPARSEFILTER_ORDER = "htmlparsefilter.order";
-    private static final long start                                = System.currentTimeMillis(); // start time of fetcher run
+    public static final  Logger LOG                   = LoggerFactory.getLogger(AbstractHtmlParseFilter.class);
+    private static final String HTMLPARSEFILTER_ORDER = "htmlparsefilter.order";
+    private static final long   start                 = System.currentTimeMillis(); // start time of fetcher run
     // 获取解析过滤器集合，用于过滤链回调判断页面加载完成
     private static AbstractHtmlParseFilter[] parseFilters        ;
-    protected Transformer transformer;
+    private        Transformer               transformer;
     private AtomicInteger pages = new AtomicInteger(0); // total pages fetched
     private Pattern filterPattern;
     private Configuration conf;
-    //添加固定前缀标示属性需要添加到Solr Index属性中
-    private final static String INDEX_PROPERTY_PREFIX = "_index_db_num_";
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     @SuppressWarnings("rawtypes")
@@ -58,17 +53,17 @@ public abstract class AbstractHtmlParseFilter implements ParseFilter {
         }
     };
 
-    public static DateFormat getDateFormat() {
+    private static DateFormat getDateFormat() {
         return (DateFormat) threadLocal.get();
     }
 
-    public static String getNowTime(Date date){
+    protected static String getNowTime(Date date){
         return getDateFormat().format(date);
     }
     /**
      * 基于xpath获取Node列表
      */
-    protected  NodeList selectNodeList(Node node, String xpath) {
+    private NodeList selectNodeList(Node node, String xpath) {
         try {
             return XPathAPI.selectNodeList(node, xpath);
         } catch (TransformerException e) {
@@ -122,8 +117,7 @@ public abstract class AbstractHtmlParseFilter implements ParseFilter {
         return parseFilters;
     }
 
-    public static String[] tokenizeToStringArray(String str, String delimiters, boolean trimTokens,
-                                                 boolean ignoreEmptyTokens) {
+    protected static String[] tokenizeToStringArray(String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
 
         if (str == null) {
             return null;
@@ -142,7 +136,7 @@ public abstract class AbstractHtmlParseFilter implements ParseFilter {
         return toStringArray(tokens);
     }
 
-    public static String[] toStringArray(Collection<String> collection) {
+    private static String[] toStringArray(Collection<String> collection) {
         if (collection == null) {
             return null;
         }
@@ -209,14 +203,14 @@ public abstract class AbstractHtmlParseFilter implements ParseFilter {
     /**
      * 清除无关的不可见空白字符
      */
-    protected String cleanInvisibleChar(String str) {
+    private String cleanInvisibleChar(String str) {
         return cleanInvisibleChar(str, false);
     }
 
     /**
      * 清除无关的不可见空白字符
      */
-    protected String cleanInvisibleChar(String str, boolean includingBlank) {
+    private String cleanInvisibleChar(String str, boolean includingBlank) {
         if (str != null) {
             str = StringUtils.remove(str, (char) 160);
             if (includingBlank) {
@@ -239,7 +233,7 @@ public abstract class AbstractHtmlParseFilter implements ParseFilter {
     /**
      * 清除无关的Node节点元素
      */
-    protected void cleanUnusedNodes(Node doc) {
+    private void cleanUnusedNodes(Node doc) {
         cleanUnusedNodes(doc, "//STYLE");
         cleanUnusedNodes(doc, "//MAP");
         cleanUnusedNodes(doc, "//SCRIPT");
@@ -249,7 +243,7 @@ public abstract class AbstractHtmlParseFilter implements ParseFilter {
     /**
      * 清除无关的Node节点元素
      */
-    protected void cleanUnusedNodes(Node node, String xpath) {
+    private void cleanUnusedNodes(Node node, String xpath) {
         try {
             NodeList nodes = XPathAPI.selectNodeList(node, xpath);
             for (int i = 0; i < nodes.getLength(); i++) {
@@ -322,7 +316,7 @@ public abstract class AbstractHtmlParseFilter implements ParseFilter {
     /**
      * 判断url是否符合自定义解析匹配规则
      */
-    public boolean isUrlMatchedForParse(String url) {
+    private boolean isUrlMatchedForParse(String url) {
         // 没有url控制规则，直接放行
         return filterPattern == null || filterPattern.matcher(url).find();
     }
@@ -366,31 +360,6 @@ public abstract class AbstractHtmlParseFilter implements ParseFilter {
                                          DocumentFragment doc) throws Exception;
 
 
-    public synchronized void injectDataToPageMetadata(String code, int  value, WebPage page) {
-        if (page != null) {
-            // 添加固定前缀标示属性需要添加到Solr Index属性中
-            String metadataCode = INDEX_PROPERTY_PREFIX + code;
-            String indexValue = getValueFromPageMetaData(page, metadataCode);
-            int dbnum;
-            if (StringUtil.isEmpty(indexValue)){
-                dbnum = Math.addExact(0, value);
-            }else {
-                dbnum = Math.addExact(Integer.parseInt(indexValue), value);
-            }
-            byte[] bytes = Bytes.toBytes(Integer.toString(dbnum));
-            if (bytes == null){
-                return;
-            }
-            page.getMetadata().put(new Utf8(metadataCode), ByteBuffer.wrap(bytes));
-        }
-    }
 
-    protected String getValueFromPageMetaData(WebPage page, String key) {
-        ByteBuffer bytes = page.getMetadata().get(new Utf8(key));
-        if (bytes == null) {
-            return null;
-        }
-        return Bytes.toString(bytes);
-    }
 
 }

@@ -30,6 +30,7 @@
       <library name="liblinear-1.8.jar"/>
       <library name="mybatis-3.3.0.jar"/>
       <library name="mysql-connector-java-5.1.18.jar"/>
+      <library name="isoparser-1.0.2.jar"/>
    </runtime>
 
     <requires>

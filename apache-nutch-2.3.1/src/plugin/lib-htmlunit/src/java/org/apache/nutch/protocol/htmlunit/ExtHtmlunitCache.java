@@ -20,6 +20,6 @@ public class ExtHtmlunitCache extends Cache {
             return false;
         }
 
-        return super.isDynamicContent(response);
+        return super.isCacheableContent(response);
     }
 }
