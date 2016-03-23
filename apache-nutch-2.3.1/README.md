@@ -1,4 +1,4 @@
-##Nutch2.3.1 新闻分类爬虫##
+## Nutch2.3.1 新闻分类爬虫
 
 
 
@@ -10,9 +10,9 @@
   - [开发环境配置](#开发环境配置)
   - [配置文件说明](#配置文件说明)
   - [solr 4.10.3配置](#solr-4103配置)
-  - [hadoop2.5.2安装部署](#hadoop252安装部署-)
-  - [项目下载地址](#项目下载地址-)
-  - [联系作者##](#联系作者)
+  - [hadoop2.5.2安装部署](#hadoop252安装部署)
+  - [项目下载地址](#项目下载地址)
+  - [联系作者](#联系作者)
 
 
 
@@ -33,7 +33,7 @@ ant成功后如下图所示：
 我设置的种子URL是一些与体育相关的主题新闻网站,urls/seed.txt文件内容如下
 
 ```
-# 新浪体育
+#新浪体育
 http://sports.sina.com.cn/
 #搜狐体育
 http://sports.sohu.com/
@@ -255,7 +255,7 @@ Hadoop 2.5.2分布式集群配置:http://blog.csdn.net/lqleo323/article/details/
 https://github.com/LQZYC/Nutch-NewsClassify
 
 
-## 联系作者
+##联系作者
 - [CSDN][14]
 
 **All copyright reserved**
