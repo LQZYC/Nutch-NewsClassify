@@ -43,6 +43,7 @@
     <dependency org="tw.edu.ntu.csie" name="libsvm" rev="3.17" conf="*->default"/>
     <dependency org="commons-codec" name="commons-codec" rev="1.3" conf="*->default"/>
     <dependency org="mysql" name="mysql-connector-java" rev="5.1.18" conf="*->default"/>
+    <dependency org="com.googlecode.mp4parser" name="isoparser" rev="1.0.2"/>
   </dependencies>
   
 </ivy-module>

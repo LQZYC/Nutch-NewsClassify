@@ -6,10 +6,12 @@
 <configuration>
     <!--此参数主要用于在IDE环境开发模式运行，在构建输出的runtime部署运行请注释或删除此项参数-->
     <!-- Just for development, please remove this plugin.folders for production env -->
+    <!--
     <property>
 	<name>plugin.folders</name>
 	<value>./src/plugin</value>
     </property>
+    -->
 <!--定义Nutch运行过程引入的插件列表，正则表达式格式。-->
     <!--注意value不要换行尤其是基于xml格式化代码时可能由于value内容较长而自动换行，会导致末尾配置的插件不被识别。
     为了让indexer-solr被识别 所以最后加了一个插件index-html,部署到分布式环境下可以删除最后的"|index-html"插件
@@ -118,7 +120,7 @@
     <!--可基于Solr实际配置运行地址配置此参数-->
 	<property>
 		<name>solr.server.url</name>
-		<value>http://114.55.6.68:8080/solr</value>
+		<value>http://localhost:8080/solr</value>
 	</property>
 
     <!--是否强制采用AJAX支持方式执行FetcherJob，默认先基于HTTP模式获取页面内容，然后再基于AJAX模式获取。-->
@@ -131,22 +133,6 @@
 			false: First using HTTP without ajax support, if
 			failure then using Htmlunit or WebDriver
 		</description>
-	</property>
-	<property>
-		<name>jdbc.driver</name>
-		<value>com.mysql.jdbc.Driver</value>
-	</property>
-	<property>
-		<name>jdbc.url</name>
-		<value>jdbc:mysql://localhost:3306/nutchClassify?useUnicode=true&amp;characterEncoding=UTF-8</value>
-	</property>
-	<property>
-		<name>jdbc.username</name>
-		<value>lq</value>
-	</property>
-	<property>
-		<name>jdbc.password</name>
-		<value>123456</value>
 	</property>
     <property>
         <name>generate.batch.id</name>
