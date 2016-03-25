@@ -1,14 +1,13 @@
 ##Nutch2.3.1 新闻分类爬虫
 
 
-
 **Contents**
 
 - [项目介绍](#项目介绍)
+- [配置文件](#配置文件)
 - [本地抓取](#本地抓取)
 - [分布式环境配置](#分布式环境配置)
 - [开发环境配置](#开发环境配置)
-- [配置文件说明](#配置文件说明)
 - [solr 4.10.3配置](#solr-4103配置)
 - [hadoop2.5.2安装部署](#hadoop252安装部署)
 - [项目下载地址](#项目下载地址)
@@ -21,8 +20,49 @@
 
 本项目基于`https://github.com/xautlx/nutch-ajax.git`，xautlx的nutch-ajax项目功能很强大，本项目在此基础上，对nutch-ajax项目做了一些精简和优化，对Nutch版本进行升级，引入Mybatis进行数据存储层处理，使用清华大学自然语言处理实验室推出的中文文本分类工具包来做文本分类的工作，形成一个可以对新闻进行分类的爬虫。在解决了一些jar包冲突问题后，使得本项目可以在ide、单机、伪分布式、完全分布式环境下都可以运行。对本项目中的训练模型文件进行替换，可以很容易实现一个分布式主题爬虫系统。对xautlx在我开发过程中提供的帮助在此一并谢过。
 
+##配置文件
+下载下来代码后进入apache-nutch-2.3.1目录，项目默认的mongodb、mysql、solr都是本地配置的，如果不是在本地配置的，则需要修改配置文件。
+mongodb的配置文件在conf/gora.properties中,如果mongodb不是在本地配置的，则把localhost换成mongodb所在机器的ip即可
+
+```
+############################
+# MongoDBStore properties  #
+############################
+gora.datastore.default=org.apache.gora.mongodb.store.MongoStore
+gora.mongodb.override_hadoop_configuration=false
+gora.mongodb.mapping.file=/gora-mongodb-mapping.xml
+gora.mongodb.servers=localhost:27017
+gora.mongodb.db=nutchFocuse
+#gora.mongodb.login=login
+#gora.mongodb.secret=secret
+```
+
+mysql配置项在conf/mybatis-config.xml中，修改为你自己的mysql配置即可
+
+```
+<dataSource type="POOLED">
+<property name="driver" value="com.mysql.jdbc.Driver"/>
+<property name="url" value="jdbc:mysql://localhost:3306/nutchClassify"/>
+<property name="username" value="lq"/>
+<property name="password" value="123456"/>
+</dataSource>
+```
+
+solr的配置在conf/nutch-site.xml文件中,如果把“solr.server.url”属性配置为空，则不进行索引
+```
+<!--可基于Solr实际配置运行地址配置此参数-->
+<property>
+<name>solr.server.url</name>
+<value>http://localhost:8080/solr</value>
+</property>
+```
+
+在conf目录下新增了svmmodel文件夹，主要用于存储THUCTC训练的分词模型。
+新增crawl-data-mapper.xml文件，为mybatis的mapper.xml文件
+新增mybatis-config.xml文件，用于配置mybatis的数据源
+
 ## 本地抓取 
-下载下来代码后进入apache-nutch-2.3.1目录，ant clean，ant，第一次ant时间会很长，耐心等待就好
+修改完配置后，直接ant clean，ant，第一次ant时间会很长，耐心等待就好
 
 ![ant clean][1]
 
@@ -94,10 +134,28 @@ Mysql数据库截图,由于给的都是跟体育相关的优秀种子网站，�
 ![mysql截图][8]
 
 ## 分布式环境配置
-如果网页的爬取过程中不需要ajax支持，那么直接运行是没有问题的，修改conf/nutch-site.xml中的plugin.includes属性使用nutch自带的插件protocol-http。如果要支持ajax，就要对hadoop进行修改。因为selenium和htmlunit需要httpclient4.3，httpcore-4.3以上的版本，然而apach-nutch-2.3.1官方建议使用的是Apache Hadoop 1.2.1 and 2.5.2，这两个我都试过，用1.2.1需要修改更多的jar包，包括升级log4j等，不建议使用hadoop－1.2.1，目前我使用的是hadoop－2.5.2，它自带的是httpclient-4.2.5.jar,httpcore-4.2.5.jar,分布式环境运行的时候会加载hadoop-2.5.2/share/hadoop/common/lib这下面的jar包，这样会出现很多稀奇古怪的错误，由于我对hadoop本身没有任何研究，所以我索性将hadoop-2.5.2/share/hadoop/common/lib下的httpclient和httpcore进行升级，升级为对应selenium和htmlunit需要的httpclient和httpcore版本。
+如果网页的爬取过程中不需要ajax支持，那么直接运行是没有问题的，修改conf/nutch-site.xml中的plugin.includes属性使用nutch自带的插件protocol-http。每次修改配置文件后，需要重新ant打包。如果要支持ajax，就要对hadoop进行修改。因为selenium和htmlunit需要httpclient4.3，httpcore-4.3以上的版本，然而apach-nutch-2.3.1官方建议使用的是Apache Hadoop 1.2.1 and 2.5.2，这两个我都试过，用1.2.1需要修改更多的jar包，包括升级log4j等，不建议使用hadoop－1.2.1，目前我使用的是hadoop－2.5.2，它自带的是httpclient-4.2.5.jar,httpcore-4.2.5.jar,分布式环境运行的时候会加载hadoop-2.5.2/share/hadoop/common/lib这下面的jar包，这样会出现很多稀奇古怪的错误，由于我对hadoop本身没有任何研究，所以我索性将hadoop-2.5.2/share/hadoop/common/lib下的httpclient和httpcore进行升级，升级为对应selenium和htmlunit需要的httpclient和httpcore版本。
 正如官网所说，建议所有的开发者和用户都升级到2.3.1，这点我很能理解，因为之前的2.3别说分布式了，就算是单机脚本都很难跑起来，bug多的飞起。
 
 ![nutch][9]
+
+分布式抓取前首先把种子url目录加入hdfs
+
+```
+lq@RfidLabMaster:~/Nutch-NewsClassify/apache-nutch-2.3.1$ hdfs dfs -rm -r /urls/seed.txt
+```
+运行分布式命令：
+
+```
+nohup runtime/deploy/bin/crawl  /urls test 1 > crawlLog 2>&1 &
+```
+一段时间后出现"Done"，表示执行完毕，也可以通过查看crawlLog文件看当前执行的情况
+
+```
+lq@RfidLabMaster:~/Nutch-NewsClassify/apache-nutch-2.3.1$ 
+[1]+  Done                    nohup runtime/deploy/bin/crawl /urls test 1 > crawlLog 2>&1
+```
+可以通过访问链接：http://rfidlabmaster:50070/logs/userlogs/  来查询运行日志
 ## 开发环境配置
 下载下来代码后进入apache-nutch-2.3.1目录，
 修改配置文件，conf/nutch-site.xml把以下内容取消注释
@@ -121,13 +179,6 @@ Mysql数据库截图,由于给的都是跟体育相关的优秀种子网站，�
 3.需要对哪个plugin进行开发，就选中plugin/src下的java文件夹，然后右键Mark Directory As -->Sources Root,完成以上步骤就可以开始愉快的进行开发了。
 
 4.由于nutch2.x后取消了crawl类，我把crawl脚本“直译”成了一个java类来方便调试，org.apache.nutch.crawl.Crawl.java
-
-
-## 配置文件说明
-在conf目录下新增了svmmodel文件夹，主要用于存储THUCTC训练的分词模型。
-新增crawl-data-mapper.xml文件，为mybatis的mapper.xml文件
-新增mybatis-config.xml文件，用于配置mybatis的数据源
-
 
 
 ##solr 4.10.3配置
