@@ -714,7 +714,7 @@
 
 <property>
   <name>fetcher.parse</name>
-  <value>false</value>
+  <value>true</value>
   <description>If true, fetcher will parse content. NOTE: previous releases would
   default to true. Since 2.0 this is set to false as a safer default.</description>
 </property>
@@ -907,8 +907,9 @@
 
 <property>
   <name>plugin.includes</name>
- <value>protocol-http|urlfilter-regex|parse-(html|tika)|index-(basic|anchor)|urlnormalizer-(pass|regex|basic)|scoring-opic</value>
- <description>Regular expression naming plugin directory names to
+ <!--<value>protocol-http|urlfilter-regex|parse-(html|tika)|index-(basic|anchor)|urlnormalizer-(pass|regex|basic)|scoring-opic</value>-->
+  <value>protocol-s2jh|urlfilter-regex|parse-(html|lq)|index-basic|urlnormalizer-(pass|regex|basic)|scoring-opic|indexer-solr</value>
+  <description>Regular expression naming plugin directory names to
   include.  Any plugin not matching this expression is excluded.
   In any case you need at least include the nutch-extensionpoints plugin. By
   default Nutch includes crawling just HTML and plain text via HTTP,

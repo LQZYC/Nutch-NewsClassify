@@ -16,7 +16,7 @@ public class SvmCheck {
     private static final String SVM_MODEL_LEXICON = "svm.model.lexicon";
     private static final String SVM_MODEL         = "svm.model";
     private static final String SVM_CATEGORY      = "svm.category";
-    private static final double THRESHOLD         = 0.5;
+    public static final double THRESHOLD         = 0.5;
     public static final  Logger LOG               = LoggerFactory.getLogger(SvmCheck.class);
     private   BasicTextClassifier classifier;
     private synchronized  BasicTextClassifier getClassifier(Configuration conf) throws Exception {

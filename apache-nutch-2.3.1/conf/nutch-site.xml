@@ -6,16 +6,15 @@
 <configuration>
     <!--此参数主要用于在IDE环境开发模式运行，在构建输出的runtime部署运行请注释或删除此项参数-->
     <!-- Just for development, please remove this plugin.folders for production env -->
-    <!--
+
     <property>
 	<name>plugin.folders</name>
 	<value>./src/plugin</value>
     </property>
-    -->
+
 <!--定义Nutch运行过程引入的插件列表，正则表达式格式。-->
     <!--注意value不要换行尤其是基于xml格式化代码时可能由于value内容较长而自动换行，会导致末尾配置的插件不被识别。
-    为了让indexer-solr被识别 所以最后加了一个插件index-html,部署到分布式环境下可以删除最后的"|index-html"插件
-    -->
+-->
 	<property>
 		<name>plugin.includes</name>
 		<value>protocol-s2jh|urlfilter-regex|parse-(html|lq)|index-basic|urlnormalizer-(pass|regex|basic)|scoring-opic|indexer-solr</value>
@@ -36,7 +35,7 @@
     <!--用于分析确认爬取和解析是否正常处理。-->
 	<property>
 		<name>fetcher.parse</name>
-		<value>false</value>
+		<value>true</value>
 		<description>If true, fetcher will parse content. NOTE: previous releases would
 			default to true. Since 2.0 this is set
 			to false as a safer default.
@@ -120,7 +119,7 @@
     <!--可基于Solr实际配置运行地址配置此参数-->
 	<property>
 		<name>solr.server.url</name>
-		<value>http://localhost:8080/solr</value>
+		<value>http://114.55.6.68:8080/solr</value>
 	</property>
 
     <!--是否强制采用AJAX支持方式执行FetcherJob，默认先基于HTTP模式获取页面内容，然后再基于AJAX模式获取。-->

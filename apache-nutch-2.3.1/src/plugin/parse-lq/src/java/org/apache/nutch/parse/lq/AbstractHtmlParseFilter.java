@@ -41,7 +41,8 @@ public abstract class AbstractHtmlParseFilter implements ParseFilter {
     // 获取解析过滤器集合，用于过滤链回调判断页面加载完成
     private static AbstractHtmlParseFilter[] parseFilters        ;
     private        Transformer               transformer;
-    private AtomicInteger pages = new AtomicInteger(0); // total pages fetched
+    private AtomicInteger pages        = new AtomicInteger(0); // total pages fetched
+    private AtomicInteger focusedPages = new AtomicInteger(0);//focuse pages fetched
     private Pattern filterPattern;
     private Configuration conf;
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
@@ -279,8 +280,12 @@ public abstract class AbstractHtmlParseFilter implements ParseFilter {
 
             // 清除无关的Node节点元素
             cleanUnusedNodes(doc);
-
             pages.incrementAndGet();
+            //把网页内容写到hadoop环境的txt文件中
+            writeHtmlToTxt(parse.getText(),pages.get());
+
+            //统计主题页面采集数量
+            statFocusePageNumber(url,focusedPages, parse);
             parse = filterInternal(url, page, parse, metaTags, doc);
 
             if (LOG.isInfoEnabled()) {
@@ -295,6 +300,10 @@ public abstract class AbstractHtmlParseFilter implements ParseFilter {
         }
         return null;
     }
+
+    protected abstract void statFocusePageNumber(String url, AtomicInteger focusedPages,Parse parse);
+
+    protected abstract void writeHtmlToTxt(String text,int order);
 
     /**
      * 通过mybatis框架进行持久化处理
@@ -359,7 +368,11 @@ public abstract class AbstractHtmlParseFilter implements ParseFilter {
     public abstract Parse filterInternal(String url, WebPage page, Parse parse, HTMLMetaTags metaTags,
                                          DocumentFragment doc) throws Exception;
 
-
-
+    public AtomicInteger getPages() {
+        return pages;
+    }
+    public AtomicInteger getFocusedPages() {
+        return focusedPages;
+    }
 
 }

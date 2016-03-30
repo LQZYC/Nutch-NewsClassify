@@ -27,7 +27,10 @@
          <export name="*"/>
       </library>
    </runtime>
-
+    <requires>
+        <import plugin="nutch-extensionpoints"/>
+        <import plugin="parse-lq"/>
+    </requires>
    <extension id="org.apache.nutch.scoring.opic"
               name="OPICScoring"
               point="org.apache.nutch.scoring.ScoringFilter">

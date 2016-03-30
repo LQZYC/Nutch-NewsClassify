@@ -20,6 +20,7 @@ package org.apache.nutch.scoring.opic;
 import org.apache.avro.util.Utf8;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.nutch.indexer.NutchDocument;
+import org.apache.nutch.parse.lq.newsclassify.NewsClassifyHtmlParseFilter;
 import org.apache.nutch.scoring.ScoreDatum;
 import org.apache.nutch.scoring.ScoringFilter;
 import org.apache.nutch.scoring.ScoringFilterException;
@@ -78,6 +79,9 @@ public class OPICScoringFilter implements ScoringFilter {
     countFiltered = conf.getBoolean("db.score.count.filtered", false);
   }
 
+    /**
+    给新注入(inject)的网页赋予一个初始值,这个值不为0
+     */
   @Override
   public void injectedScore(String url, WebPage row)
       throws ScoringFilterException {
@@ -88,6 +92,7 @@ public class OPICScoringFilter implements ScoringFilter {
   /**
    * Set to 0.0f (unknown value) - inlink contributions will bring it to a
    * correct level. Newly discovered pages have at least one inlink.
+   * 给新发现的网页设置初始值为0,该网页的真实值可以通过链接到该网页上的页面获得
    */
   @Override
   public void initialScore(String url, WebPage row)
@@ -96,14 +101,18 @@ public class OPICScoringFilter implements ScoringFilter {
     row.getMetadata().put(CASH_KEY, ByteBuffer.wrap(Bytes.toBytes(0.0f)));
   }
 
-  /** Use {@link WebPage#getScore()}. */
+  /** Use {@link WebPage#getScore()}.
+   * 生成一个排序值,该值可以用于generate阶段生成抓取列表TOPN个URL
+   */
   @Override
   public float generatorSortValue(String url, WebPage row, float initSort)
       throws ScoringFilterException {
     return row.getScore() * initSort;
   }
 
-  /** Increase the score by a sum of inlinked scores. */
+  /** Increase the score by a sum of inlinked scores.
+   * 更新网页的得分 opic算法
+   */
   @Override
   public void updateScore(String url, WebPage row,
       List<ScoreDatum> inlinkedScoreData) {
@@ -119,11 +128,13 @@ public class OPICScoringFilter implements ScoringFilter {
       cash = Bytes.toFloat(cashRaw.array(),
           cashRaw.arrayOffset() + cashRaw.position());
     }
-    row.getMetadata().put(CASH_KEY,
+      row.getMetadata().put(CASH_KEY,
         ByteBuffer.wrap(Bytes.toBytes(cash + adjust)));
   }
 
-  /** Get cash on hand, divide it by the number of outlinks and apply. */
+  /** Get cash on hand, divide it by the number of outlinks and apply.
+   *把当前网页的cash分给它的所有链接
+   */
   @Override
   public void distributeScoreToOutlinks(String fromUrl, WebPage row,
       Collection<ScoreDatum> scoreData, int allCount) {
@@ -141,25 +152,46 @@ public class OPICScoringFilter implements ScoringFilter {
     // internal and external score factor
     float internalScore = scoreUnit * internalScoreFactor;
     float externalScore = scoreUnit * externalScoreFactor;
+      /**
+       *根据需要修改分数,现在分数=原分数+0.3*url与主题相关度得分-0.1*url深度
+       *------------------------------------------------------------
+       */
+    LOG.info("parse-lq的map大小为"+NewsClassifyHtmlParseFilter.urlScoreMap.size());
     for (ScoreDatum scoreDatum : scoreData) {
       try {
         String toHost = new URL(scoreDatum.getUrl()).getHost();
         String fromHost = new URL(fromUrl.toString()).getHost();
+        float score;
         if (toHost.equalsIgnoreCase(fromHost)) {
-          scoreDatum.setScore(internalScore);
+//          scoreDatum.setScore(internalScore);
+            score = getScore(internalScore, scoreDatum);
         } else {
-          scoreDatum.setScore(externalScore);
+//          scoreDatum.setScore(externalScore);
+            score = getScore(externalScore, scoreDatum);
         }
+          scoreDatum.setScore(score);
+          LOG.info("url为:"+scoreDatum.getUrl()+" divide后得分:"+score);
       } catch (MalformedURLException e) {
         LOG.error("Failed with the following MalformedURLException: ", e);
-        scoreDatum.setScore(externalScore);
       }
     }
     // reset cash to zero
     row.getMetadata().put(CASH_KEY, ByteBuffer.wrap(Bytes.toBytes(0.0f)));
   }
 
-  /** Dampen the boost value by scorePower. */
+    private float getScore(float score, ScoreDatum scoreDatum) {
+        if (!(NewsClassifyHtmlParseFilter.urlScoreMap.containsKey(scoreDatum.getUrl()))){
+            return score;
+        }
+        score = (float) (score + 0.3 * NewsClassifyHtmlParseFilter.urlScoreMap.get(scoreDatum.getUrl()) - 0.1 * scoreDatum.getDistance());
+        if(score < 0){
+            score = 0;
+        }
+        NewsClassifyHtmlParseFilter.urlScoreMap.remove(scoreDatum.getUrl());
+        return score;
+    }
+
+    /** Dampen the boost value by scorePower. */
   public float indexerScore(String url, NutchDocument doc, WebPage row,
       float initScore) {
     return (float) Math.pow(row.getScore(), scorePower) * initScore;
