@@ -6,12 +6,12 @@
 <configuration>
     <!--此参数主要用于在IDE环境开发模式运行，在构建输出的runtime部署运行请注释或删除此项参数-->
     <!-- Just for development, please remove this plugin.folders for production env -->
-
+    <!--
     <property>
 	<name>plugin.folders</name>
 	<value>./src/plugin</value>
     </property>
-
+    -->
 <!--定义Nutch运行过程引入的插件列表，正则表达式格式。-->
     <!--注意value不要换行尤其是基于xml格式化代码时可能由于value内容较长而自动换行，会导致末尾配置的插件不被识别。
 -->
@@ -133,6 +133,17 @@
 			failure then using Htmlunit or WebDriver
 		</description>
 	</property>
+
+    <property>
+        <name>parser.html.outlinks.ignore_tags</name>
+        <value>img,script,link</value>
+        <description>Comma separated list of HTML tags, from which outlinks
+            shouldn't be extracted. Nutch takes links from: a, area, form, frame,
+            iframe, script, link, img. If you add any of those tags here, it
+            won't be taken. Default is empty list. Probably reasonable value
+            for most people would be "img,script,link".</description>
+    </property>
+
     <property>
         <name>generate.batch.id</name>
         <value>*</value>

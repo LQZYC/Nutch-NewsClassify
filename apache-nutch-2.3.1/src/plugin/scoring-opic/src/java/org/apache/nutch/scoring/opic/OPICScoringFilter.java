@@ -20,7 +20,6 @@ package org.apache.nutch.scoring.opic;
 import org.apache.avro.util.Utf8;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.nutch.indexer.NutchDocument;
-import org.apache.nutch.parse.lq.newsclassify.NewsClassifyHtmlParseFilter;
 import org.apache.nutch.scoring.ScoreDatum;
 import org.apache.nutch.scoring.ScoringFilter;
 import org.apache.nutch.scoring.ScoringFilterException;
@@ -156,7 +155,6 @@ public class OPICScoringFilter implements ScoringFilter {
        *根据需要修改分数,现在分数=原分数+0.3*url与主题相关度得分-0.1*url深度
        *------------------------------------------------------------
        */
-    LOG.info("parse-lq的map大小为"+NewsClassifyHtmlParseFilter.urlScoreMap.size());
     for (ScoreDatum scoreDatum : scoreData) {
       try {
         String toHost = new URL(scoreDatum.getUrl()).getHost();
@@ -164,13 +162,12 @@ public class OPICScoringFilter implements ScoringFilter {
         float score;
         if (toHost.equalsIgnoreCase(fromHost)) {
 //          scoreDatum.setScore(internalScore);
-            score = getScore(internalScore, scoreDatum);
+            score = getScore(internalScore, scoreDatum,row);
         } else {
 //          scoreDatum.setScore(externalScore);
-            score = getScore(externalScore, scoreDatum);
+            score = getScore(externalScore, scoreDatum,row);
         }
           scoreDatum.setScore(score);
-          LOG.info("url为:"+scoreDatum.getUrl()+" divide后得分:"+score);
       } catch (MalformedURLException e) {
         LOG.error("Failed with the following MalformedURLException: ", e);
       }
@@ -179,15 +176,16 @@ public class OPICScoringFilter implements ScoringFilter {
     row.getMetadata().put(CASH_KEY, ByteBuffer.wrap(Bytes.toBytes(0.0f)));
   }
 
-    private float getScore(float score, ScoreDatum scoreDatum) {
-        if (!(NewsClassifyHtmlParseFilter.urlScoreMap.containsKey(scoreDatum.getUrl()))){
+    private float getScore(float score, ScoreDatum scoreDatum,WebPage page) {
+        Utf8 url = new Utf8(scoreDatum.getUrl());
+        if (!(page.getMarkers().containsKey(url))){
             return score;
         }
-        score = (float) (score + 0.3 * NewsClassifyHtmlParseFilter.urlScoreMap.get(scoreDatum.getUrl()) - 0.1 * scoreDatum.getDistance());
+        score = (float) (score + 0.3 * Float.parseFloat((page.getMarkers().get(url)).toString()) - 0.1 * scoreDatum.getDistance());
         if(score < 0){
             score = 0;
         }
-        NewsClassifyHtmlParseFilter.urlScoreMap.remove(scoreDatum.getUrl());
+        page.getMarkers().remove(url);
         return score;
     }
 
